@@ -1,14 +1,26 @@
-from sqlalchemy import Column, BigInteger, Integer, ForeignKey, Numeric, DateTime, Text, String, Boolean
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
+
 from app.database import Base
 
+
 class Expenses(Base):
-    __tablename__ = "expenses"
+    __tablename__ = 'expenses'
 
     id = Column(BigInteger, primary_key=True, index=True)
     value = Column(Numeric)
-    id_category = Column(Integer, ForeignKey("category.id"))
+    id_category = Column(Integer, ForeignKey('category.id'))
     update_at = Column(DateTime)
     description = Column(Text)
-    id_user = Column(BigInteger, ForeignKey("user.id"))
+    id_user = Column(BigInteger, ForeignKey('user.id'))
     payment_method = Column(String)
     is_recurring = Column(Boolean)

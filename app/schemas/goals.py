@@ -1,5 +1,7 @@
-from pydantic import BaseModel
 from datetime import date
+
+from pydantic import BaseModel
+
 
 class GoalsBase(BaseModel):
     id_user: int
@@ -8,8 +10,10 @@ class GoalsBase(BaseModel):
     period_start: date
     period_end: date
 
+
 class GoalsCreate(GoalsBase):
     pass
+
 
 class GoalsOut(GoalsBase):
     id: int

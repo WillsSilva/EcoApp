@@ -1,9 +1,11 @@
-from sqlalchemy import Column, BigInteger, String, DateTime, Boolean
-from app.database import Base
 from passlib.hash import bcrypt
+from sqlalchemy import BigInteger, Boolean, Column, DateTime, String
+
+from app.database import Base
+
 
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = 'user'
 
     id = Column(BigInteger, primary_key=True, index=True)
     name = Column(String)
@@ -16,4 +18,3 @@ class User(Base):
 
     def verify_password(self, password: str):
         return bcrypt.verify(password, self.password)
-

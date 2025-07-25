@@ -1,5 +1,7 @@
-from pydantic import BaseModel
 from datetime import datetime
+
+from pydantic import BaseModel
+
 
 class ExpensesBase(BaseModel):
     value: float
@@ -9,8 +11,10 @@ class ExpensesBase(BaseModel):
     payment_method: str
     is_recurring: bool
 
+
 class ExpensesCreate(ExpensesBase):
     pass
+
 
 class ExpensesOut(ExpensesBase):
     id: int

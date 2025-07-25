@@ -1,5 +1,7 @@
-from pydantic import BaseModel
 from datetime import datetime
+
+from pydantic import BaseModel
+
 
 class IncomeBase(BaseModel):
     id_user: int
@@ -7,8 +9,10 @@ class IncomeBase(BaseModel):
     source: str
     description: str
 
+
 class IncomeCreate(IncomeBase):
     received_at: datetime
+
 
 class IncomeOut(IncomeBase):
     id: int
