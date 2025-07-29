@@ -2,10 +2,8 @@ from typing import Optional
 
 from fastapi import APIRouter, File, Form, UploadFile
 
-from app.utils.expense_parser import (
-    parse_expense_from_image,
-    parse_expense_from_text,
-)
+from app.utils.expense_parser import (parse_expense_from_image,
+                                      parse_expense_from_text)
 
 router = APIRouter(prefix='/ai', tags=['IA Despesas'])
 

@@ -1,7 +1,7 @@
 import os
 import re
 
-import requests
+import httpx
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -22,16 +22,28 @@ def parse_expense_from_text(text: str):
 
 async def parse_expense_from_image(image_file):
     API_KEY = os.getenv('OCR_SPACE_API_KEY')
-
     url = 'https://api.ocr.space/parse/image'
     files = {'file': (image_file.filename, await image_file.read())}
-    data = {'apikey': API_KEY, 'language': 'por', 'isOverlayRequired': False}
+    data = {
+        'apikey': API_KEY,
+        'language': 'por',
+        'isOverlayRequired': False,
+    }
 
-    response = requests.post(url, files=files, data=data)
-    result = response.json()
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, data=data, files=files)
 
     try:
-        text = result['ParsedResults'][0]['ParsedText']
+        result = response.json()  # Agora é um dicionário
+        if result.get('IsErroredOnProcessing'):
+            return None
+        parsed_results = result.get('ParsedResults')
+        if not parsed_results:
+            return None
+
+        text = parsed_results[0].get('ParsedText', '')
         return parse_expense_from_text(text)
-    except (KeyError, IndexError):
+
+    except Exception as e:
+        print(f'[Erro OCR] {e}')
         return None

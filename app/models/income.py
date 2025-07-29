@@ -1,12 +1,5 @@
-from sqlalchemy import (
-    BigInteger,
-    Column,
-    DateTime,
-    ForeignKey,
-    Numeric,
-    String,
-    Text,
-)
+from sqlalchemy import (BigInteger, Column, DateTime, ForeignKey, Numeric,
+                        String, Text)
 
 from app.database import Base
 
