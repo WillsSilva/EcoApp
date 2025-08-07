@@ -4,13 +4,18 @@ import os
 import requests
 from dotenv import load_dotenv
 from fastapi import APIRouter, File, HTTPException, UploadFile
-from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
-from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
+from langchain_core.runnables import RunnableSequence
 
 load_dotenv()
 
-router = APIRouter()
+router = APIRouter(tags=['IA Despesas'])
+
+CATEGORIAS_VALIDAS = [
+    "alimentação", "transporte", "aluguel", "serviços",
+    "saúde", "educação", "lazer", "outros"
+]
 
 
 def extract_text_from_image(file: UploadFile) -> str:
@@ -32,7 +37,8 @@ def extract_text_from_image(file: UploadFile) -> str:
 
 
 def interpret_text_with_ai(text: str) -> dict:
-    """Usa LangChain + OpenAI para interpretar o texto ou imagem do pagamento"""
+    """Usa LangChain + OpenAI para interpretar o texto do comprovante"""
+
     prompt = PromptTemplate.from_template(
         """
 Extraia as informações do texto do comprovante Pix abaixo.
@@ -44,20 +50,27 @@ Retorne em formato JSON com as seguintes chaves:
 - valor (float)
 - data (formato dd/mm/yyyy)
 - hora (formato HH:MM:SS)
-- destinatario
-- pagador
-- banco
+- destinatario (nome, CPF, banco)
+- pagador (nome, CPF, instituição)
+- categoria (escolha entre: alimentação, transporte, aluguel, serviços, saúde, educação, lazer, outros)
 """
     )
 
     llm = ChatOpenAI(temperature=0, model='gpt-3.5-turbo')
-    chain = LLMChain(llm=llm, prompt=prompt)
+    chain = prompt | llm
+    result = chain.invoke({"text": text})
 
-    result = chain.run(text=text)
-    return result
+    try:
+        dados = json.loads(result.content)
 
+        categoria = dados.get("categoria", "").strip().lower()
+        if categoria not in CATEGORIAS_VALIDAS:
+            dados["categoria"] = "outros"
 
-router = APIRouter(tags=['IA Despesas'])
+        return dados
+
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Erro ao converter resposta da IA para JSON: {e}")
 
 
 @router.post('/upload-payment', summary='Processa comprovante de pagamento')
@@ -75,7 +88,7 @@ async def process_pix_receipt(file: UploadFile = File(...)):
 
     try:
         structured_data = interpret_text_with_ai(text)
-        return {'dados_extraidos': json.loads(structured_data)}
+        return {'dados_extraidos': structured_data}
 
     except Exception as e:
         raise HTTPException(
